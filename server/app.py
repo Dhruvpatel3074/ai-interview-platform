@@ -4,9 +4,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# Temporary in-memory users (no database yet)
 users = {}
-
 
 @app.route("/register", methods=["POST"])
 def register():
@@ -34,6 +32,24 @@ def login():
         return jsonify({"token": "real-token-123"})
 
     return jsonify({"message": "Invalid credentials"}), 401
+
+
+@app.route("/start-interview", methods=["POST"])
+def start_interview():
+    data = request.json
+    role = data.get("role")
+
+    question = f"Tell me about your experience as a {role} developer."
+    return jsonify({"question": question})
+
+
+@app.route("/submit-answer", methods=["POST"])
+def submit_answer():
+    data = request.json
+    answer = data.get("answer")
+
+    feedback = "Good structure. Try adding more technical depth."
+    return jsonify({"feedback": feedback})
 
 
 if __name__ == "__main__":
