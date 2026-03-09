@@ -1,62 +1,60 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import InputField from "../components/InputField";
+import Button from "../components/Button";
 import { loginUser } from "../services/api";
 
-const Login = () => {
-  const [form, setForm] = useState({ email: "", password: "" });
+function Login() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
   const navigate = useNavigate();
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (!form.email || !form.password) {
-      alert("Please enter email and password");
-      return;
-    }
+    const result = await loginUser(username, password);
 
-    try {
-      const data = await loginUser(form);
-
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        navigate("/dashboard");
-      } else {
-        alert(data.message);
-      }
-    } catch (error) {
-      alert("Server error");
+    if (result.status === 200) {
+      navigate("/dashboard");
+    } else {
+      alert(result.data.message);
     }
   };
 
   return (
-    <div className="auth-container">
+    <div style={{ padding: "40px", textAlign: "center" }}>
       <h2>Login</h2>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
+      <form onSubmit={handleLogin}>
+        <InputField
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
         />
 
-        <input
-          name="password"
+        <br /><br />
+
+        <InputField
           type="password"
           placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button type="submit">Login</button>
+        <br /><br />
+
+        <Button text="Login" type="submit" />
       </form>
 
-      <Link to="/register">Create Account</Link>
+      <br />
+
+      <p>
+        Don't have an account? <Link to="/register">Register</Link>
+      </p>
     </div>
   );
-};
+}
 
 export default Login;

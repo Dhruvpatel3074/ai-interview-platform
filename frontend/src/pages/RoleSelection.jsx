@@ -1,27 +1,33 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 
-const RoleSelection = () => {
-  const [role, setRole] = useState("");
+function RoleSelection() {
   const navigate = useNavigate();
 
-  const startInterview = () => {
-    localStorage.setItem("selectedRole", role);
-    navigate("/interview");
+  const roles = [
+    "Frontend Developer",
+    "Backend Developer",
+    "Full Stack Developer",
+    "Data Scientist",
+    "DevOps Engineer"
+  ];
+
+  const selectRole = (role) => {
+    navigate("/interview-setup", { state: { role } });
   };
 
   return (
-    <div className="page">
-      <h2>Select Role</h2>
-      <select onChange={(e) => setRole(e.target.value)}>
-        <option value="">Choose role</option>
-        <option value="frontend">Frontend Developer</option>
-        <option value="backend">Backend Developer</option>
-        <option value="data">Data Scientist</option>
-      </select>
-      <button onClick={startInterview}>Start Interview</button>
+    <div style={{ padding: "40px" }}>
+      <h2>Select Interview Role</h2>
+
+      {roles.map((role) => (
+        <div key={role} style={{ marginTop: "10px" }}>
+          <button onClick={() => selectRole(role)}>
+            {role}
+          </button>
+        </div>
+      ))}
     </div>
   );
-};
+}
 
 export default RoleSelection;

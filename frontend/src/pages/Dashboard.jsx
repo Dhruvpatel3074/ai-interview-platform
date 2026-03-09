@@ -1,20 +1,26 @@
 import { useNavigate } from "react-router-dom";
+import Button from "../components/Button";
 
-const Dashboard = () => {
+function Dashboard() {
+
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
-
   return (
-    <div className="auth-container">
-      <h2>Dashboard</h2>
-      <p>Welcome to AI Interview Platform</p>
-      <button onClick={handleLogout}>Logout</button>
+    <div style={{ padding: "40px", textAlign: "center" }}>
+
+      <h1>AI Interview Preparation Platform</h1>
+
+      <p>Practice technical interviews with AI.</p>
+
+      <br />
+
+      <Button
+        text="Start Interview"
+        onClick={() => navigate("/roles")}
+      />
+
     </div>
   );
-};
+}
 
 export default Dashboard;
