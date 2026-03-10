@@ -1,90 +1,143 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../services/api";
-import InputField from "../components/InputField";
-import Button from "../components/Button";
 
-function Register() {
+function Register(){
 
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const [identifier,setIdentifier] = useState("");
+  const [password,setPassword] = useState("");
+  const [confirmPassword,setConfirmPassword] = useState("");
+
+  const [showPassword,setShowPassword] = useState(false);
+  const [showConfirmPassword,setShowConfirmPassword] = useState(false);
+
+  const [error,setError] = useState("");
 
   const navigate = useNavigate();
 
   const handleRegister = async () => {
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+    if(password !== confirmPassword){
+      setError("Passwords do not match");
       return;
     }
 
     setError("");
 
-    const { data, status } = await registerUser(identifier, password);
+    const {data,status} = await registerUser(identifier,password);
 
-    if (status === 200) {
-      alert("Registration successful");
+    if(status === 200){
       navigate("/");
-    } else {
+    }else{
       setError(data.message || "Registration failed");
     }
+
   };
 
-  return (
-    <div style={{ textAlign: "center", marginTop: "80px" }}>
+  const isDisabled =
+    identifier.trim()==="" ||
+    password.trim()==="" ||
+    confirmPassword.trim()==="";
 
-      <h2>Register</h2>
+  return(
 
-      <InputField
-        placeholder="Username or Email"
-        value={identifier}
-        onChange={(e) => setIdentifier(e.target.value)}
-      />
+    <div className="auth-container">
 
-      <br /><br />
+      <div className="auth-card">
 
-      <InputField
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        <div className="logo">🤖</div>
 
-      <br /><br />
+        <h1>Create Account</h1>
 
-      <InputField
-        type="password"
-        placeholder="Confirm Password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-      />
+        {error && (
+          <p className="error-text">{error}</p>
+        )}
 
-      {error && (
-        <p style={{ color: "red", marginTop: "5px" }}>
-          {error}
-        </p>
-      )}
+        {/* username/email */}
 
-      <br />
+        <div className="input-group">
 
-      <Button text="Register" onClick={handleRegister} />
+          <span className="input-icon">📧</span>
 
-      <br /><br />
+          <input
+            className="input-field"
+            placeholder="Username or Email"
+            value={identifier}
+            onChange={(e)=>setIdentifier(e.target.value)}
+          />
 
-      <p>
-        Already have an account?{" "}
-        <span
-          onClick={() => navigate("/")}
-          style={{ color: "blue", cursor: "pointer" }}
+        </div>
+
+        {/* password */}
+
+        <div className="input-group">
+
+          <span className="input-icon">🔒</span>
+
+          <input
+            className="input-field"
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={password}
+            onChange={(e)=>setPassword(e.target.value)}
+          />
+
+          <span
+            className="eye-icon"
+            onClick={()=>setShowPassword(!showPassword)}
+          >
+            {showPassword ? "🙈" : "👁"}
+          </span>
+
+        </div>
+
+        {/* confirm password */}
+
+        <div className="input-group">
+
+          <span className="input-icon">🔒</span>
+
+          <input
+            className="input-field"
+            type={showConfirmPassword ? "text" : "password"}
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e)=>setConfirmPassword(e.target.value)}
+          />
+
+          <span
+            className="eye-icon"
+            onClick={()=>setShowConfirmPassword(!showConfirmPassword)}
+          >
+            {showConfirmPassword ? "🙈" : "👁"}
+          </span>
+
+        </div>
+
+        <button
+          className="auth-btn"
+          disabled={isDisabled}
+          onClick={handleRegister}
         >
-          Login
-        </span>
-      </p>
+          Sign Up
+        </button>
+
+        <p className="bottom-text">
+          Already have an account?{" "}
+          <span
+            className="link"
+            onClick={()=>navigate("/")}
+          >
+            Login
+          </span>
+        </p>
+
+      </div>
 
     </div>
+
   );
+
 }
 
 export default Register;
