@@ -1,59 +1,88 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { registerUser } from "../services/api";
 import InputField from "../components/InputField";
 import Button from "../components/Button";
-import { registerUser } from "../services/api";
 
 function Register() {
-  const [username, setUsername] = useState("");
+
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
+  const handleRegister = async () => {
 
-    const result = await registerUser(username, password);
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
 
-    if (result.status === 200) {
+    setError("");
+
+    const { data, status } = await registerUser(identifier, password);
+
+    if (status === 200) {
       alert("Registration successful");
       navigate("/");
     } else {
-      alert(result.data.message);
+      setError(data.message || "Registration failed");
     }
   };
 
   return (
-    <div style={{ padding: "40px", textAlign: "center" }}>
+    <div style={{ textAlign: "center", marginTop: "80px" }}>
+
       <h2>Register</h2>
 
-      <form onSubmit={handleRegister}>
-        <InputField
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
+      <InputField
+        placeholder="Username or Email"
+        value={identifier}
+        onChange={(e) => setIdentifier(e.target.value)}
+      />
 
-        <br /><br />
+      <br /><br />
 
-        <InputField
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+      <InputField
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
 
-        <br /><br />
+      <br /><br />
 
-        <Button text="Register" type="submit" />
-      </form>
+      <InputField
+        type="password"
+        placeholder="Confirm Password"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+      />
+
+      {error && (
+        <p style={{ color: "red", marginTop: "5px" }}>
+          {error}
+        </p>
+      )}
 
       <br />
 
+      <Button text="Register" onClick={handleRegister} />
+
+      <br /><br />
+
       <p>
-        Already have an account? <Link to="/">Login</Link>
+        Already have an account?{" "}
+        <span
+          onClick={() => navigate("/")}
+          style={{ color: "blue", cursor: "pointer" }}
+        >
+          Login
+        </span>
       </p>
+
     </div>
   );
 }

@@ -1,58 +1,63 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../services/api";
 import InputField from "../components/InputField";
 import Button from "../components/Button";
-import { loginUser } from "../services/api";
 
 function Login() {
-  const [username, setUsername] = useState("");
+
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async () => {
 
-    const result = await loginUser(username, password);
+    const { data, status } = await loginUser(identifier, password);
 
-    if (result.status === 200) {
+    if (status === 200) {
       navigate("/dashboard");
     } else {
-      alert(result.data.message);
+      alert(data.message || "Login failed");
     }
   };
 
   return (
-    <div style={{ padding: "40px", textAlign: "center" }}>
+    <div style={{ textAlign: "center", marginTop: "80px" }}>
+
       <h2>Login</h2>
 
-      <form onSubmit={handleLogin}>
-        <InputField
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
+      <InputField
+        placeholder="Username or Email"
+        value={identifier}
+        onChange={(e) => setIdentifier(e.target.value)}
+      />
 
-        <br /><br />
+      <br /><br />
 
-        <InputField
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+      <InputField
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
 
-        <br /><br />
+      <br /><br />
 
-        <Button text="Login" type="submit" />
-      </form>
+      <Button text="Login" onClick={handleLogin} />
 
-      <br />
+      <br /><br />
 
       <p>
-        Don't have an account? <Link to="/register">Register</Link>
+        Don't have an account?{" "}
+        <span
+          onClick={() => navigate("/register")}
+          style={{ color: "blue", cursor: "pointer" }}
+        >
+          Register
+        </span>
       </p>
+
     </div>
   );
 }
