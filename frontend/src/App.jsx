@@ -9,6 +9,7 @@ import RoleSelection from "./pages/RoleSelection";
 import InterviewSetup from "./pages/InterviewSetup";
 import InterviewSession from "./pages/InterviewSession";
 import Results from "./pages/Results";
+import InterviewHistory from "./pages/InterviewHistory";
 
 function Layout() {
 
@@ -29,6 +30,7 @@ function Layout() {
           <Route path="/interview-setup" element={<InterviewSetup />} />
           <Route path="/interview-session" element={<InterviewSession />} />
           <Route path="/results" element={<Results />} />
+          <Route path="/history" element={<InterviewHistory />} />
         </Routes>
       </div>
     </>

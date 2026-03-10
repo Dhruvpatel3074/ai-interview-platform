@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import Button from "../components/Button";
 
 function Results() {
@@ -6,46 +7,96 @@ function Results() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const questions = location.state?.questions || [];
   const answers = location.state?.answers || [];
   const result = location.state?.result || {};
+  const role = location.state?.role;
+  const company = location.state?.company;
+
+  useEffect(() => {
+
+    const history = JSON.parse(localStorage.getItem("interviewHistory")) || [];
+
+    const newEntry = {
+      company,
+      role,
+      score: result.score,
+      date: new Date().toLocaleString()
+    };
+
+    history.push(newEntry);
+
+    localStorage.setItem("interviewHistory", JSON.stringify(history));
+
+  }, []);
+
 
   return (
     <div style={{ padding: "40px", textAlign: "center" }}>
 
-      <h2>Interview Results</h2>
+      <h1>Interview Results</h1>
 
-      <div
-        style={{
-          background: "white",
-          padding: "30px",
-          width: "400px",
-          margin: "20px auto",
-          borderRadius: "10px",
-          boxShadow: "0px 2px 10px rgba(0,0,0,0.1)"
-        }}
-      >
-        <h3>Score: {result.score}</h3>
+      <h3>Company: {company}</h3>
+      <h3>Role: {role}</h3>
 
-        <p style={{ marginTop: "10px" }}>
-          {result.feedback}
-        </p>
-      </div>
+      <h2>Score: {result.score}</h2>
 
-      <h3>Your Answers</h3>
-
-      {answers.map((ans, index) => (
-        <div key={index} style={{ marginBottom: "10px" }}>
-          <b>Answer {index + 1}</b>
-          <p>{ans}</p>
-        </div>
-      ))}
+      <p>{result.feedback}</p>
 
       <br />
 
-      <Button
-        text="Back to Dashboard"
-        onClick={() => navigate("/dashboard")}
-      />
+      <h2>Your Responses</h2>
+
+      <div style={{ maxWidth: "700px", margin: "auto", textAlign: "left" }}>
+
+        {questions.map((question, index) => (
+
+          <div
+            key={index}
+            style={{
+              marginBottom: "20px",
+              padding: "15px",
+              border: "1px solid #ddd",
+              borderRadius: "8px",
+              background: "#f9f9f9"
+            }}
+          >
+
+            <p><strong>Question {index + 1}</strong></p>
+            <p>{question}</p>
+
+            <p><strong>Your Answer:</strong></p>
+
+            <p style={{ color: answers[index] === "SKIPPED" ? "red" : "black" }}>
+              {answers[index] === "SKIPPED" ? "Skipped" : answers[index]}
+            </p>
+
+          </div>
+
+        ))}
+
+      </div>
+
+      <br /><br />
+
+      <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
+
+        <Button
+          text="Start New Interview"
+          onClick={() => navigate("/roles")}
+        />
+
+        <Button
+          text="View Interview History"
+          onClick={() => navigate("/history")}
+        />
+
+        <Button
+          text="Back to Dashboard"
+          onClick={() => navigate("/dashboard")}
+        />
+
+      </div>
 
     </div>
   );

@@ -1,46 +1,66 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Button from "../components/Button";
-import { startInterview } from "../services/api";
+import { generateQuestions } from "../services/api";
 
 function InterviewSetup() {
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  const role = location.state.role;
+  const role = location.state?.role;
+  const company = location.state?.company;
 
   const [difficulty, setDifficulty] = useState("medium");
-  const [questions, setQuestions] = useState(5);
+  const [count, setCount] = useState(5);
   const [loading, setLoading] = useState(false);
+
 
   const handleStart = async () => {
 
     setLoading(true);
 
-    const data = await startInterview(role, difficulty, questions);
+    try {
 
-    navigate("/interview-session", {
-      state: {
-        questions: data.questions
-      }
-    });
+      const data = await generateQuestions(role, company, difficulty, count);
+
+      navigate("/interview-session", {
+        state: {
+          questions: data.questions,
+          role,
+          company,
+          difficulty
+        }
+      });
+
+    } catch (error) {
+
+      alert("Error generating questions");
+
+    }
+
+    setLoading(false);
   };
+
 
   if (loading) {
     return (
       <div style={{ textAlign: "center", marginTop: "100px" }}>
-        <h2>Generating Interview Questions...</h2>
+        <h2>Generating AI Interview Questions...</h2>
       </div>
     );
   }
+
 
   return (
     <div style={{ padding: "40px", textAlign: "center" }}>
 
       <h2>Interview Setup</h2>
 
+      <p>Company: {company}</p>
       <p>Role: {role}</p>
+
+      <br />
 
       <h3>Difficulty</h3>
 
@@ -53,18 +73,20 @@ function InterviewSetup() {
         <option value="hard">Hard</option>
       </select>
 
+
       <br /><br />
 
       <h3>Number of Questions</h3>
 
       <select
-        value={questions}
-        onChange={(e) => setQuestions(e.target.value)}
+        value={count}
+        onChange={(e) => setCount(e.target.value)}
       >
         <option value="3">3</option>
         <option value="5">5</option>
         <option value="10">10</option>
       </select>
+
 
       <br /><br /><br />
 

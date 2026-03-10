@@ -8,35 +8,60 @@ function InterviewSession() {
   const navigate = useNavigate();
 
   const questions = location.state?.questions || [];
+  const role = location.state?.role;
+  const company = location.state?.company;
 
   const [current, setCurrent] = useState(0);
   const [answer, setAnswer] = useState("");
   const [answers, setAnswers] = useState([]);
-
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes
+  const [timeLeft, setTimeLeft] = useState(120);
 
   useEffect(() => {
 
     const timer = setInterval(() => {
+
       setTimeLeft((prev) => {
 
         if (prev <= 1) {
-          handleNext();
+          handleSkip();
           return 120;
         }
 
         return prev - 1;
+
       });
+
     }, 1000);
 
     return () => clearInterval(timer);
 
   }, [current]);
 
-  const handleNext = async () => {
+  const handleNext = () => {
+
+    if (answer.trim() === "") {
+      alert("Please answer the question or skip it.");
+      return;
+    }
 
     const updatedAnswers = [...answers, answer];
     setAnswers(updatedAnswers);
+
+    moveNext(updatedAnswers);
+
+  };
+
+  const handleSkip = () => {
+
+    const updatedAnswers = [...answers, "SKIPPED"];
+    setAnswers(updatedAnswers);
+
+    moveNext(updatedAnswers);
+
+  };
+
+  const moveNext = (updatedAnswers) => {
+
     setAnswer("");
     setTimeLeft(120);
 
@@ -45,35 +70,40 @@ function InterviewSession() {
       return;
     }
 
-    const res = await fetch("http://localhost:5000/api/submit-interview", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        answers: updatedAnswers
-      })
-    });
-
-    const data = await res.json();
-
     navigate("/results", {
       state: {
+        questions,
         answers: updatedAnswers,
-        result: data
+        role,
+        company,
+        result: { score: updatedAnswers.length }
       }
     });
+
+  };
+
+  const handleQuit = () => {
+
+    const confirmQuit = window.confirm(
+      "Are you sure you want to quit the interview?"
+    );
+
+    if (confirmQuit) {
+      navigate("/dashboard");
+    }
+
   };
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
-  const progress = ((current + 1) / questions.length) * 100;
-
   return (
     <div style={{ padding: "40px", textAlign: "center" }}>
 
       <h2>Interview Session</h2>
+
+      <h3>Company: {company}</h3>
+      <h3>Role: {role}</h3>
 
       <h3>
         Question {current + 1} / {questions.length}
@@ -82,25 +112,6 @@ function InterviewSession() {
       <h4 style={{ color: "red" }}>
         Time Remaining: {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
       </h4>
-
-      <div
-        style={{
-          width: "300px",
-          height: "10px",
-          background: "#ddd",
-          margin: "10px auto",
-          borderRadius: "5px"
-        }}
-      >
-        <div
-          style={{
-            width: `${progress}%`,
-            height: "100%",
-            background: "#2b4aa0",
-            borderRadius: "5px"
-          }}
-        />
-      </div>
 
       <p style={{ fontSize: "18px", marginTop: "20px" }}>
         {questions[current]}
@@ -116,7 +127,15 @@ function InterviewSession() {
 
       <br /><br />
 
-      <Button text="Next Question" onClick={handleNext} />
+      <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
+
+        <Button text="Submit Answer" onClick={handleNext} />
+
+        <Button text="Skip" onClick={handleSkip} />
+
+        <Button text="Quit Interview" onClick={handleQuit} />
+
+      </div>
 
     </div>
   );
