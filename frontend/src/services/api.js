@@ -1,73 +1,57 @@
-const API_URL = "http://localhost:5000";
+const BASE_URL = "http://localhost:5000/api";
 
-export const loginUser = async (username, password) => {
+export const generateQuestions = async (
+role,
+company,
+difficulty,
+count
+) => {
 
-  const res = await fetch(`${API_URL}/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ username, password })
-  });
+try{
 
-  const data = await res.json();
+const response = await fetch(
+`${BASE_URL}/generate-questions`,
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+role,
+company,
+difficulty,
+count
+})
+}
+);
 
-  return {
-    data,
-    status: res.status
-  };
-};
+const data = await response.json();
 
+return data.questions;
 
-export const registerUser = async (username, password) => {
+}catch(error){
 
-  const res = await fetch(`${API_URL}/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ username, password })
-  });
+console.log("Backend not ready — using mock questions");
 
-  const data = await res.json();
+/* fallback questions */
 
-  return {
-    data,
-    status: res.status
-  };
-};
+const mockQuestions = [
+"Explain REST API.",
+"What is JWT authentication?",
+"Explain middleware in Express.",
+"What is database indexing?",
+"What is the difference between SQL and NoSQL?",
+"What is CORS?",
+"What is microservices architecture?",
+"What is REST vs GraphQL?",
+"What is rate limiting?",
+"What is load balancing?"
+];
 
+/* return requested count */
 
-export const generateQuestions = async (role, company, difficulty, count) => {
+return mockQuestions.slice(0,count);
 
-  const res = await fetch(`${API_URL}/api/generate-questions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      role,
-      company,
-      difficulty,
-      count
-    })
-  });
+}
 
-  return res.json();
-};
-
-
-export const submitInterview = async (answers) => {
-
-  const res = await fetch(`${API_URL}/api/submit-interview`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      answers
-    })
-  });
-
-  return res.json();
 };

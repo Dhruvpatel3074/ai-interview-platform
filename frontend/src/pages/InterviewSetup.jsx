@@ -1,99 +1,177 @@
-import { useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import Button from "../components/Button";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { generateQuestions } from "../services/api";
 
-function InterviewSetup() {
+export default function InterviewSetup() {
 
-  const location = useLocation();
-  const navigate = useNavigate();
+const navigate = useNavigate();
+const location = useLocation();
 
-  const role = location.state?.role;
-  const company = location.state?.company;
+const [role,setRole] = useState("");
+const [company,setCompany] = useState("");
 
-  const [difficulty, setDifficulty] = useState("medium");
-  const [count, setCount] = useState(5);
-  const [loading, setLoading] = useState(false);
+const [difficulty,setDifficulty] = useState("");
+const [questionCount,setQuestionCount] = useState("");
 
+useEffect(()=>{
 
-  const handleStart = async () => {
+if(location.state?.role && location.state?.company){
 
-    setLoading(true);
+setRole(location.state.role);
+setCompany(location.state.company);
 
-    try {
+localStorage.setItem("selectedRole",location.state.role);
+localStorage.setItem("selectedCompany",location.state.company);
 
-      const data = await generateQuestions(role, company, difficulty, count);
+}else{
 
-      navigate("/interview-session", {
-        state: {
-          questions: data.questions,
-          role,
-          company,
-          difficulty
-        }
-      });
+const savedRole = localStorage.getItem("selectedRole");
+const savedCompany = localStorage.getItem("selectedCompany");
 
-    } catch (error) {
+if(savedRole) setRole(savedRole);
+if(savedCompany) setCompany(savedCompany);
 
-      alert("Error generating questions");
-
-    }
-
-    setLoading(false);
-  };
-
-
-  if (loading) {
-    return (
-      <div style={{ textAlign: "center", marginTop: "100px" }}>
-        <h2>Generating AI Interview Questions...</h2>
-      </div>
-    );
-  }
-
-
-  return (
-    <div style={{ padding: "40px", textAlign: "center" }}>
-
-      <h2>Interview Setup</h2>
-
-      <p>Company: {company}</p>
-      <p>Role: {role}</p>
-
-      <br />
-
-      <h3>Difficulty</h3>
-
-      <select
-        value={difficulty}
-        onChange={(e) => setDifficulty(e.target.value)}
-      >
-        <option value="easy">Easy</option>
-        <option value="medium">Medium</option>
-        <option value="hard">Hard</option>
-      </select>
-
-
-      <br /><br />
-
-      <h3>Number of Questions</h3>
-
-      <select
-        value={count}
-        onChange={(e) => setCount(e.target.value)}
-      >
-        <option value="3">3</option>
-        <option value="5">5</option>
-        <option value="10">10</option>
-      </select>
-
-
-      <br /><br /><br />
-
-      <Button text="Start Interview" onClick={handleStart} />
-
-    </div>
-  );
 }
 
-export default InterviewSetup;
+},[location.state]);
+
+
+const startInterview = async () => {
+
+if(!difficulty || !questionCount) return;
+
+const questions = await generateQuestions(
+role,
+company,
+difficulty,
+Number(questionCount)
+);
+
+localStorage.setItem(
+"interviewQuestions",
+JSON.stringify(questions)
+);
+
+navigate("/interview-session",{
+state:{
+role,
+company,
+difficulty,
+questionCount
+}
+});
+
+};
+
+
+return (
+
+<div className="dashboard-page">
+
+<div className="dashboard-wrapper">
+
+<button
+className="secondary-btn"
+style={{marginBottom:"25px"}}
+onClick={()=>navigate("/role-selection")}
+>
+← Back
+</button>
+
+<h1 className="dashboard-heading">
+Interview Setup
+</h1>
+
+<p className="dashboard-description">
+Configure your interview settings before starting.
+</p>
+
+<div className="how-card">
+
+<p style={{marginBottom:"10px"}}>
+<strong>Role:</strong> {role || "Not Selected"}
+</p>
+
+<p style={{marginBottom:"30px"}}>
+<strong>Company:</strong> {company || "Not Selected"}
+</p>
+
+<div style={{marginBottom:"25px"}}>
+
+<label style={{fontWeight:"600"}}>
+Difficulty <span style={{color:"red"}}>*</span>
+</label>
+
+<br/>
+
+<select
+value={difficulty}
+onChange={(e)=>setDifficulty(e.target.value)}
+style={{
+marginTop:"10px",
+padding:"12px",
+width:"100%",
+borderRadius:"10px"
+}}
+>
+
+<option value="">Choose Difficulty</option>
+<option value="Easy">Easy</option>
+<option value="Medium">Medium</option>
+<option value="Hard">Hard</option>
+
+</select>
+
+</div>
+
+<div style={{marginBottom:"30px"}}>
+
+<label style={{fontWeight:"600"}}>
+Number of Questions <span style={{color:"red"}}>*</span>
+</label>
+
+<br/>
+
+<select
+value={questionCount}
+onChange={(e)=>setQuestionCount(e.target.value)}
+style={{
+marginTop:"10px",
+padding:"12px",
+width:"100%",
+borderRadius:"10px"
+}}
+>
+
+<option value="">Choose Questions</option>
+<option value="5">5</option>
+<option value="10">10</option>
+<option value="15">15</option>
+<option value="20">20</option>
+
+</select>
+
+</div>
+
+<button
+className="primary-btn"
+style={{
+width:"100%",
+opacity:(!difficulty || !questionCount)?0.5:1,
+cursor:(!difficulty || !questionCount)?"not-allowed":"pointer"
+}}
+disabled={!difficulty || !questionCount}
+onClick={startInterview}
+>
+Start Interview
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+);
+
+}

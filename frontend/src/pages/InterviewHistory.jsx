@@ -1,65 +1,93 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Button from "../components/Button";
 
-function InterviewHistory() {
+function InterviewHistory(){
 
-  const [history, setHistory] = useState([]);
-  const navigate = useNavigate();
+const navigate = useNavigate();
 
-  useEffect(() => {
+const [history,setHistory] = useState([]);
 
-    const storedHistory =
-      JSON.parse(localStorage.getItem("interviewHistory")) || [];
+useEffect(()=>{
 
-    setHistory(storedHistory);
+const storedHistory =
+JSON.parse(localStorage.getItem("interviewHistory")) || [];
 
-  }, []);
+setHistory(storedHistory);
 
-  return (
-    <div style={{ padding: "40px", textAlign: "center" }}>
+},[]);
 
-      <h1>Interview History</h1>
+const clearHistory = ()=>{
 
-      <br />
+localStorage.removeItem("interviewHistory");
+setHistory([]);
 
-      {history.length === 0 && <p>No interviews taken yet.</p>}
+};
 
-      <div style={{ maxWidth: "600px", margin: "auto" }}>
+return(
 
-        {history.map((item, index) => (
+<div className="dashboard-page">
 
-          <div
-            key={index}
-            style={{
-              padding: "15px",
-              border: "1px solid #ddd",
-              marginBottom: "10px",
-              borderRadius: "8px",
-              background: "#f5f5f5"
-            }}
-          >
+<div className="dashboard-wrapper">
 
-            <p><strong>Company:</strong> {item.company}</p>
-            <p><strong>Role:</strong> {item.role}</p>
-            <p><strong>Score:</strong> {item.score}</p>
-            <p><strong>Date:</strong> {item.date}</p>
+<div className="how-card" style={{maxWidth:"700px",margin:"auto"}}>
 
-          </div>
+<h1>Interview History</h1>
 
-        ))}
+<br/>
 
-      </div>
+{history.length === 0 && (
+<p>No interviews taken yet.</p>
+)}
 
-      <br />
+{history.length > 0 && (
 
-      <Button
-        text="Back to Dashboard"
-        onClick={() => navigate("/dashboard")}
-      />
+<button
+className="secondary-btn"
+onClick={clearHistory}
+style={{marginBottom:"20px"}}
+>
+Clear History
+</button>
 
-    </div>
-  );
+)}
+
+{history.map((item,index)=>(
+<div
+key={index}
+style={{
+border:"1px solid #e5e7eb",
+padding:"15px",
+borderRadius:"8px",
+marginBottom:"10px",
+background:"#f5f5f5"
+}}
+>
+
+<p><strong>Company:</strong> {item.company}</p>
+<p><strong>Role:</strong> {item.role}</p>
+<p><strong>Score:</strong> {item.score}</p>
+<p><strong>Date:</strong> {item.date}</p>
+
+</div>
+))}
+
+<br/>
+
+<button
+className="primary-btn"
+onClick={()=>navigate("/dashboard")}
+>
+Back to Dashboard
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+);
+
 }
 
 export default InterviewHistory;

@@ -1,124 +1,156 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import Button from "../components/Button";
+import { useNavigate } from "react-router-dom";
 
 function RoleSelection() {
 
-  const navigate = useNavigate();
+const navigate = useNavigate();
 
-  const [role, setRole] = useState("Frontend Developer");
-  const [company, setCompany] = useState("Google");
+const [company, setCompany] = useState("");
+const [role, setRole] = useState("");
 
-  const roles = [
-    "Frontend Developer",
-    "Backend Developer",
-    "Full Stack Developer",
-    "Data Scientist",
-    "DevOps Engineer"
-  ];
+const handleContinue = () => {
 
-  const companies = [
-    "Google",
-    "Microsoft",
-    "Amazon",
-    "Apple",
-    "Meta",
-    "Netflix",
-    "Tesla",
-    "Nvidia",
-    "Adobe",
-    "IBM",
-    "Oracle",
-    "Intel",
-    "Samsung",
-    "Sony",
-    "Uber",
-    "Airbnb",
-    "Spotify",
-    "LinkedIn",
-    "PayPal",
-    "Salesforce",
-    "Cisco",
-    "Dell",
-    "HP",
-    "SAP",
-    "Accenture",
-    "Capgemini",
-    "TCS",
-    "Infosys",
-    "Wipro",
-    "HCLTech",
-    "Tech Mahindra",
-    "Zoho",
-    "Freshworks",
-    "Flipkart",
-    "Paytm",
-    "PhonePe",
-    "Razorpay",
-    "Zomato",
-    "Swiggy",
-    "Ola",
-    "Postman",
-    "BrowserStack",
-    "Chargebee",
-    "Dream11",
-    "PolicyBazaar",
-    "Urban Company",
-    "Lenskart",
-    "Udaan",
-    "CRED",
-    "Groww"
-  ];
+if(!company || !role) return;
 
-  const handleNext = () => {
-    navigate("/interview-setup", {
-      state: { role, company }
-    });
-  };
+navigate("/interview-setup",{
+state:{
+company,
+role
+}
+});
 
-  return (
-    <div style={{ textAlign: "center", padding: "40px" }}>
+};
 
-      <h2>Select Role and Company</h2>
+return (
 
-      <br />
+<div className="dashboard-page">
 
-      <h3>Select Role</h3>
+<div className="dashboard-wrapper">
 
-      <select
-        value={role}
-        onChange={(e) => setRole(e.target.value)}
-        style={{ padding: "10px", width: "250px" }}
-      >
-        {roles.map((r, index) => (
-          <option key={index} value={r}>
-            {r}
-          </option>
-        ))}
-      </select>
+<h1 className="dashboard-heading">
+Select Role & Company
+</h1>
 
-      <br /><br />
+<p className="dashboard-description">
+Choose your target company and role to start practicing interview questions.
+</p>
 
-      <h3>Select Company</h3>
+{/* Back Button */}
 
-      <select
-        value={company}
-        onChange={(e) => setCompany(e.target.value)}
-        style={{ padding: "10px", width: "250px" }}
-      >
-        {companies.map((c, index) => (
-          <option key={index} value={c}>
-            {c}
-          </option>
-        ))}
-      </select>
+<div style={{marginBottom:"20px"}}>
 
-      <br /><br /><br />
+<button
+className="secondary-btn"
+onClick={()=>navigate("/dashboard")}
+>
+← Back to Dashboard
+</button>
 
-      <Button text="Next" onClick={handleNext} />
+</div>
 
-    </div>
-  );
+<div className="how-card">
+
+{/* Company */}
+
+<div style={{marginBottom:"25px"}}>
+
+<label style={{fontWeight:"600"}}>
+Select Company <span style={{color:"red"}}>*</span>
+</label>
+
+<br/>
+
+<select
+value={company}
+onChange={(e)=>setCompany(e.target.value)}
+style={{
+marginTop:"10px",
+padding:"12px",
+width:"100%",
+borderRadius:"10px"
+}}
+>
+
+<option value="">Choose Company</option>
+
+<option>Google</option>
+<option>Microsoft</option>
+<option>Amazon</option>
+<option>Meta</option>
+<option>Apple</option>
+<option>Netflix</option>
+<option>Adobe</option>
+<option>IBM</option>
+<option>Intel</option>
+<option>Oracle</option>
+<option>Wipro</option>
+<option>TCS</option>
+<option>Infosys</option>
+<option>HCL</option>
+<option>Accenture</option>
+
+</select>
+
+</div>
+
+{/* Role */}
+
+<div style={{marginBottom:"30px"}}>
+
+<label style={{fontWeight:"600"}}>
+Select Role <span style={{color:"red"}}>*</span>
+</label>
+
+<br/>
+
+<select
+value={role}
+onChange={(e)=>setRole(e.target.value)}
+style={{
+marginTop:"10px",
+padding:"12px",
+width:"100%",
+borderRadius:"10px"
+}}
+>
+
+<option value="">Choose Role</option>
+
+<option>Frontend Developer</option>
+<option>Backend Developer</option>
+<option>Full Stack Developer</option>
+<option>Software Engineer</option>
+<option>DevOps Engineer</option>
+<option>Data Engineer</option>
+<option>Machine Learning Engineer</option>
+
+</select>
+
+</div>
+
+<button
+className="primary-btn"
+disabled={!company || !role}
+onClick={handleContinue}
+style={{
+width:"100%",
+opacity:(!company || !role)?0.5:1,
+cursor:(!company || !role)?"not-allowed":"pointer"
+}}
+>
+
+Continue
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+);
+
 }
 
 export default RoleSelection;

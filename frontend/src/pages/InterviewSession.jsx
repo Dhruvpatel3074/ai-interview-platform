@@ -1,144 +1,327 @@
-import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Button from "../components/Button";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function InterviewSession() {
 
-  const location = useLocation();
-  const navigate = useNavigate();
+const navigate = useNavigate();
+const location = useLocation();
 
-  const questions = location.state?.questions || [];
-  const role = location.state?.role;
-  const company = location.state?.company;
+/* questions */
 
-  const [current, setCurrent] = useState(0);
-  const [answer, setAnswer] = useState("");
-  const [answers, setAnswers] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(120);
+const [questions,setQuestions] = useState([]);
 
-  useEffect(() => {
+/* question index */
 
-    const timer = setInterval(() => {
+const [currentQuestionIndex,setCurrentQuestionIndex] = useState(0);
 
-      setTimeLeft((prev) => {
+/* answers */
 
-        if (prev <= 1) {
-          handleSkip();
-          return 120;
-        }
+const [answers,setAnswers] = useState({});
 
-        return prev - 1;
+/* timer */
 
-      });
+const [timeLeft,setTimeLeft] = useState(120);
 
-    }, 1000);
+/* role + company */
 
-    return () => clearInterval(timer);
+const role =
+location.state?.role ||
+localStorage.getItem("selectedRole") ||
+"N/A";
 
-  }, [current]);
+const company =
+location.state?.company ||
+localStorage.getItem("selectedCompany") ||
+"N/A";
 
-  const handleNext = () => {
 
-    if (answer.trim() === "") {
-      alert("Please answer the question or skip it.");
-      return;
-    }
+/* load questions once */
 
-    const updatedAnswers = [...answers, answer];
-    setAnswers(updatedAnswers);
+useEffect(()=>{
 
-    moveNext(updatedAnswers);
+const storedQuestions =
+JSON.parse(localStorage.getItem("interviewQuestions")) || [];
 
-  };
+setQuestions(storedQuestions);
 
-  const handleSkip = () => {
+},[]);
 
-    const updatedAnswers = [...answers, "SKIPPED"];
-    setAnswers(updatedAnswers);
 
-    moveNext(updatedAnswers);
+/* timer */
 
-  };
+useEffect(()=>{
 
-  const moveNext = (updatedAnswers) => {
+if(timeLeft === 0){
+handleNext();
+return;
+}
 
-    setAnswer("");
-    setTimeLeft(120);
+const timer = setTimeout(()=>{
+setTimeLeft(timeLeft - 1);
+},1000);
 
-    if (current + 1 < questions.length) {
-      setCurrent(current + 1);
-      return;
-    }
+return ()=>clearTimeout(timer);
 
-    navigate("/results", {
-      state: {
-        questions,
-        answers: updatedAnswers,
-        role,
-        company,
-        result: { score: updatedAnswers.length }
-      }
-    });
+},[timeLeft]);
 
-  };
 
-  const handleQuit = () => {
+/* reset timer when question changes */
 
-    const confirmQuit = window.confirm(
-      "Are you sure you want to quit the interview?"
-    );
+useEffect(()=>{
+setTimeLeft(120);
+},[currentQuestionIndex]);
 
-    if (confirmQuit) {
-      navigate("/dashboard");
-    }
 
-  };
+/* answer change */
 
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
+const handleAnswerChange = (e)=>{
 
-  return (
-    <div style={{ padding: "40px", textAlign: "center" }}>
+setAnswers({
+...answers,
+[currentQuestionIndex]:e.target.value
+});
 
-      <h2>Interview Session</h2>
+};
 
-      <h3>Company: {company}</h3>
-      <h3>Role: {role}</h3>
 
-      <h3>
-        Question {current + 1} / {questions.length}
-      </h3>
+/* next */
 
-      <h4 style={{ color: "red" }}>
-        Time Remaining: {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
-      </h4>
+const handleNext = ()=>{
 
-      <p style={{ fontSize: "18px", marginTop: "20px" }}>
-        {questions[current]}
-      </p>
+if(currentQuestionIndex < questions.length - 1){
+setCurrentQuestionIndex(currentQuestionIndex + 1);
+}
 
-      <textarea
-        rows="5"
-        cols="50"
-        value={answer}
-        placeholder="Type your answer here..."
-        onChange={(e) => setAnswer(e.target.value)}
-      />
+};
 
-      <br /><br />
 
-      <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
+/* previous */
 
-        <Button text="Submit Answer" onClick={handleNext} />
+const handlePrevious = ()=>{
 
-        <Button text="Skip" onClick={handleSkip} />
+if(currentQuestionIndex > 0){
+setCurrentQuestionIndex(currentQuestionIndex - 1);
+}
 
-        <Button text="Quit Interview" onClick={handleQuit} />
+};
 
-      </div>
 
-    </div>
-  );
+/* skip */
+
+const handleSkip = ()=>{
+
+setAnswers({
+...answers,
+[currentQuestionIndex]:"Skipped"
+});
+
+handleNext();
+
+};
+
+
+/* submit */
+
+const handleSubmit = ()=>{
+
+const results = questions.map((q,index)=>({
+question:q,
+answer:answers[index] || "Skipped"
+}));
+
+let score = 0;
+
+results.forEach((r)=>{
+if(r.answer && r.answer !== "Skipped" && r.answer.trim().length > 10){
+score += 20;
+}
+});
+
+if(score > 100) score = 100;
+
+
+/* save history */
+
+const history =
+JSON.parse(localStorage.getItem("interviewHistory")) || [];
+
+history.push({
+company,
+role,
+score,
+date:new Date().toLocaleString()
+});
+
+localStorage.setItem(
+"interviewHistory",
+JSON.stringify(history)
+);
+
+
+/* navigate to results */
+
+navigate("/results",{
+state:{
+results,
+role,
+company,
+score
+}
+});
+
+};
+
+
+/* loading */
+
+if(questions.length === 0){
+
+return(
+
+<div className="dashboard-page">
+<div className="dashboard-wrapper">
+<h2>Loading Questions...</h2>
+</div>
+</div>
+
+);
+
+}
+
+
+return(
+
+<div className="interview-session-container">
+
+<div className="interview-card">
+
+<button
+className="secondary-btn"
+style={{marginBottom:"20px"}}
+onClick={()=>navigate("/interview-setup")}
+>
+← Back
+</button>
+
+
+{/* ROLE + COMPANY */}
+
+<div style={{marginBottom:"15px"}}>
+
+<p style={{
+fontSize:"18px",
+fontWeight:"600",
+marginBottom:"4px"
+}}>
+Role: {role}
+</p>
+
+<p style={{
+fontSize:"18px",
+fontWeight:"600"
+}}>
+Company: {company}
+</p>
+
+</div>
+
+
+{/* TIMER */}
+
+<div className="timer">
+
+⏳ {Math.floor(timeLeft/60)}:
+{String(timeLeft%60).padStart(2,"0")}
+
+</div>
+
+
+{/* PROGRESS BAR */}
+
+<div className="progress-bar">
+
+<div
+className="progress-fill"
+style={{
+width:`${((currentQuestionIndex+1)/questions.length)*100}%`
+}}
+></div>
+
+</div>
+
+
+<h3>
+Question {currentQuestionIndex + 1} / {questions.length}
+</h3>
+
+
+{/* QUESTION */}
+
+<div className="question-box">
+
+{questions[currentQuestionIndex]}
+
+</div>
+
+
+{/* ANSWER BOX */}
+
+<textarea
+placeholder="Type your answer..."
+value={answers[currentQuestionIndex] || ""}
+onChange={handleAnswerChange}
+/>
+
+
+{/* BUTTONS */}
+
+<div className="interview-buttons">
+
+<button
+className="secondary-btn"
+onClick={handlePrevious}
+disabled={currentQuestionIndex === 0}
+>
+Previous
+</button>
+
+
+<button
+className="secondary-btn"
+onClick={handleSkip}
+>
+Skip
+</button>
+
+
+{currentQuestionIndex === questions.length - 1 ? (
+
+<button
+className="primary-btn"
+onClick={handleSubmit}
+>
+Submit
+</button>
+
+) : (
+
+<button
+className="primary-btn"
+onClick={handleNext}
+>
+Next
+</button>
+
+)}
+
+</div>
+
+</div>
+
+</div>
+
+);
+
 }
 
 export default InterviewSession;

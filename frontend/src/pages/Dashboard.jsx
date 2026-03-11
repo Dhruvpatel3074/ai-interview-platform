@@ -1,67 +1,72 @@
 import { useNavigate } from "react-router-dom";
-import Button from "../components/Button";
 
 function Dashboard() {
 
-  const navigate = useNavigate();
+const navigate = useNavigate();
 
-  return (
-    <div style={{ textAlign: "center", padding: "60px" }}>
+return (
 
-      <h1>AI Interview Preparation Platform</h1>
+<div className="dashboard-page">
 
-      <p style={{ fontSize: "18px", marginTop: "10px" }}>
-        Practice technical interviews with AI and improve your skills.
-      </p>
+<div className="dashboard-wrapper">
 
-      <br /><br />
+<h1 className="dashboard-heading">
+🚀 AI Interview Preparation Platform
+</h1>
 
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        gap: "20px"
-      }}>
+<p className="dashboard-description">
+Practice technical interviews with AI and boost your confidence.
+</p>
 
-        <Button
-          text="Start Interview"
-          onClick={() => navigate("/roles")}
-        />
+<div className="dashboard-buttons">
 
-        <Button
-          text="View Interview History"
-          onClick={() => navigate("/history")}
-        />
+<button
+className="primary-btn"
+onClick={() => navigate("/role-selection")}
+>
+🎯 Start Interview
+</button>
 
-      </div>
+<button
+className="secondary-btn"
+onClick={() => navigate("/history")}
+>
+📜 Interview History
+</button>
 
-      <br /><br />
+</div>
 
-      <div style={{
-        maxWidth: "500px",
-        margin: "auto",
-        background: "#f5f5f5",
-        padding: "20px",
-        borderRadius: "10px"
-      }}>
+<div className="how-card">
 
-        <h3>How it works</h3>
+<h2>How it works</h2>
 
-        <p>
-          1. Select your role and company.
-        </p>
+<div className="steps">
 
-        <p>
-          2. Answer AI generated interview questions.
-        </p>
+<div className="step">
+<span className="step-number">1</span>
+<p>Select your role and company.</p>
+</div>
 
-        <p>
-          3. Get feedback and improve your performance.
-        </p>
+<div className="step">
+<span className="step-number">2</span>
+<p>Answer AI generated interview questions.</p>
+</div>
 
-      </div>
+<div className="step">
+<span className="step-number">3</span>
+<p>Get feedback and improve performance.</p>
+</div>
 
-    </div>
-  );
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+);
+
 }
 
 export default Dashboard;

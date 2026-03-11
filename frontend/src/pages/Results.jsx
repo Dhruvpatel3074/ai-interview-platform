@@ -1,105 +1,114 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import Button from "../components/Button";
 
 function Results() {
 
-  const location = useLocation();
-  const navigate = useNavigate();
+const location = useLocation();
+const navigate = useNavigate();
 
-  const questions = location.state?.questions || [];
-  const answers = location.state?.answers || [];
-  const result = location.state?.result || {};
-  const role = location.state?.role;
-  const company = location.state?.company;
+const data = location.state || {};
 
-  useEffect(() => {
+const results = data.results || [];
+const role = data.role || "N/A";
+const company = data.company || "N/A";
+const score = data.score || 0;
 
-    const history = JSON.parse(localStorage.getItem("interviewHistory")) || [];
+return (
 
-    const newEntry = {
-      company,
-      role,
-      score: result.score,
-      date: new Date().toLocaleString()
-    };
+<div className="dashboard-page">
 
-    history.push(newEntry);
+<div className="dashboard-wrapper">
 
-    localStorage.setItem("interviewHistory", JSON.stringify(history));
+<div className="how-card" style={{maxWidth:"700px",margin:"auto"}}>
 
-  }, []);
+<h1>Interview Results</h1>
 
+<br/>
 
-  return (
-    <div style={{ padding: "40px", textAlign: "center" }}>
+<p><strong>Company:</strong> {company}</p>
+<p><strong>Role:</strong> {role}</p>
 
-      <h1>Interview Results</h1>
+<h2>Score: {score} / 100</h2>
 
-      <h3>Company: {company}</h3>
-      <h3>Role: {role}</h3>
+<br/>
 
-      <h2>Score: {result.score}</h2>
+<h2>Your Responses</h2>
 
-      <p>{result.feedback}</p>
+<br/>
 
-      <br />
+{results.map((item,index)=>{
 
-      <h2>Your Responses</h2>
+return(
 
-      <div style={{ maxWidth: "700px", margin: "auto", textAlign: "left" }}>
+<div
+key={index}
+style={{
+border:"1px solid #e5e7eb",
+padding:"15px",
+borderRadius:"8px",
+marginBottom:"15px",
+background:"#f9fafb"
+}}
+>
 
-        {questions.map((question, index) => (
+<p style={{fontWeight:"600"}}>
+Question {index+1}
+</p>
 
-          <div
-            key={index}
-            style={{
-              marginBottom: "20px",
-              padding: "15px",
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              background: "#f9f9f9"
-            }}
-          >
+<p style={{marginBottom:"10px"}}>
+{item.question}
+</p>
 
-            <p><strong>Question {index + 1}</strong></p>
-            <p>{question}</p>
+<p>
+<strong>Answer:</strong>
+<br/>
+{item.answer || "Skipped"}
+</p>
 
-            <p><strong>Your Answer:</strong></p>
+</div>
 
-            <p style={{ color: answers[index] === "SKIPPED" ? "red" : "black" }}>
-              {answers[index] === "SKIPPED" ? "Skipped" : answers[index]}
-            </p>
+);
 
-          </div>
+})}
 
-        ))}
+<br/>
 
-      </div>
+<div style={{
+display:"flex",
+gap:"15px",
+justifyContent:"center"
+}}>
 
-      <br /><br />
+<button
+className="primary-btn"
+onClick={()=>navigate("/role-selection")}
+>
+Start New Interview
+</button>
 
-      <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
+<button
+className="primary-btn"
+onClick={()=>navigate("/history")}
+>
+View Interview History
+</button>
 
-        <Button
-          text="Start New Interview"
-          onClick={() => navigate("/roles")}
-        />
+<button
+className="secondary-btn"
+onClick={()=>navigate("/dashboard")}
+>
+Back to Dashboard
+</button>
 
-        <Button
-          text="View Interview History"
-          onClick={() => navigate("/history")}
-        />
+</div>
 
-        <Button
-          text="Back to Dashboard"
-          onClick={() => navigate("/dashboard")}
-        />
+</div>
 
-      </div>
+</div>
 
-    </div>
-  );
+</div>
+
+);
+
 }
 
 export default Results;

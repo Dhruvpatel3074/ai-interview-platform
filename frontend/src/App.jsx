@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 
@@ -11,38 +11,37 @@ import InterviewSession from "./pages/InterviewSession";
 import Results from "./pages/Results";
 import InterviewHistory from "./pages/InterviewHistory";
 
-function Layout() {
-
-  const location = useLocation();
-
-  const showNavbar = location.pathname === "/dashboard";
-
-  return (
-    <>
-      {showNavbar && <Navbar />}
-
-      <div style={{ paddingTop: showNavbar ? "80px" : "0px" }}>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/roles" element={<RoleSelection />} />
-          <Route path="/interview-setup" element={<InterviewSetup />} />
-          <Route path="/interview-session" element={<InterviewSession />} />
-          <Route path="/results" element={<Results />} />
-          <Route path="/history" element={<InterviewHistory />} />
-        </Routes>
-      </div>
-    </>
-  );
-}
-
 function App() {
-  return (
-    <Router>
-      <Layout />
-    </Router>
-  );
+
+const location = useLocation();
+const showNavbar = location.pathname === "/dashboard";
+
+return (
+
+<>
+{showNavbar && <Navbar />}
+
+<div style={{paddingTop: showNavbar ? "80px" : "0px"}}>
+
+<Routes>
+
+<Route path="/" element={<Login />} />
+<Route path="/register" element={<Register />} />
+<Route path="/dashboard" element={<Dashboard />} />
+<Route path="/role-selection" element={<RoleSelection />} />
+<Route path="/interview-setup" element={<InterviewSetup />} />
+<Route path="/interview-session" element={<InterviewSession />} />
+<Route path="/results" element={<Results />} />
+<Route path="/history" element={<InterviewHistory />} />
+
+</Routes>
+
+</div>
+
+</>
+
+);
+
 }
 
 export default App;
