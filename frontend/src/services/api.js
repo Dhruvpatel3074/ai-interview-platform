@@ -1,5 +1,7 @@
 const BASE_URL = "http://localhost:5000/api";
 
+/* ---------------- GENERATE QUESTIONS ---------------- */
+
 export const generateQuestions = async (
 role,
 company,
@@ -33,8 +35,6 @@ return data.questions;
 
 console.log("Backend not ready — using mock questions");
 
-/* fallback questions */
-
 const mockQuestions = [
 "Explain REST API.",
 "What is JWT authentication?",
@@ -48,9 +48,73 @@ const mockQuestions = [
 "What is load balancing?"
 ];
 
-/* return requested count */
-
 return mockQuestions.slice(0,count);
+
+}
+
+};
+
+
+/* ---------------- LOGIN USER ---------------- */
+
+export const loginUser = async (identifier,password) => {
+
+try{
+
+const response = await fetch(`${BASE_URL}/login`,{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+identifier,
+password
+})
+});
+
+const data = await response.json();
+
+return { data, status: response.status };
+
+}catch(error){
+
+return {
+data:{ message:"Server not running" },
+status:500
+};
+
+}
+
+};
+
+
+/* ---------------- REGISTER USER ---------------- */
+
+export const registerUser = async (identifier,password) => {
+
+try{
+
+const response = await fetch(`${BASE_URL}/register`,{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+identifier,
+password
+})
+});
+
+const data = await response.json();
+
+return { data, status: response.status };
+
+}catch(error){
+
+return {
+data:{ message:"Server not running" },
+status:500
+};
 
 }
 
