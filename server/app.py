@@ -3,14 +3,15 @@ from flask_cors import CORS
 from google import genai
 import random
 
-# Configure Gemini API
-client = genai.Client(api_key="AIzaSyC_U4FJgrpRjCzQFlxW9gxaGsmOqni7-F0")
+# Gemini API
+client = genai.Client(api_key="AIzaSyC3aw2_OaX1VFo_SJ9YOf5wwrzpJUE6_lg")
 
 app = Flask(__name__)
 CORS(app)
 
-# Temporary in-memory storage
+# Temporary user storage
 users = []
+
 
 # ==============================
 # QUESTION BANKS
@@ -110,7 +111,6 @@ medium_questions = [
 "What is caching strategy?",
 "What is database transaction?",
 "What is ACID property?",
-"What is database indexing?",
 "What is message broker?",
 "What is WebSocket?",
 "What is gRPC?",
@@ -151,7 +151,6 @@ hard_questions = [
 "What is distributed locking?",
 "What is vector clock?",
 "What is CRDT?",
-"What is distributed caching?",
 "What is sharding strategy?",
 "What is database failover?",
 "What is load shedding?",
@@ -172,9 +171,11 @@ hard_questions = [
 "What is event-driven microservices?"
 ]
 
+
 # ==============================
 # REGISTER
 # ==============================
+
 @app.route("/api/register", methods=["POST"])
 def register():
 
@@ -201,6 +202,7 @@ def register():
 # ==============================
 # LOGIN
 # ==============================
+
 @app.route("/api/login", methods=["POST"])
 def login():
 
@@ -219,6 +221,7 @@ def login():
 # ==============================
 # GENERATE QUESTIONS
 # ==============================
+
 @app.route("/api/generate-questions", methods=["POST"])
 def generate_questions():
 
@@ -253,8 +256,6 @@ Rules:
             contents=prompt
         )
 
-        print("✅ Gemini response received")
-
         text = response.text
 
         questions = []
@@ -266,16 +267,11 @@ Rules:
 
         questions = questions[:count]
 
-        print("🤖 AI Questions:", questions)
-
-        return jsonify({
-            "questions": questions
-        })
+        return jsonify({"questions": questions})
 
     except Exception as e:
 
-        print("❌ Gemini error:", e)
-        print("⚠ Using backup questions")
+        print("Gemini error:", e)
 
         if difficulty == "Easy":
             selected = random.sample(easy_questions, count)
@@ -283,18 +279,144 @@ Rules:
         elif difficulty == "Medium":
             selected = random.sample(medium_questions, count)
 
-        elif difficulty == "Hard":
+        else:
             selected = random.sample(hard_questions, count)
 
-        else:
-            selected = random.sample(medium_questions, count)
+        return jsonify({"questions": selected})
+
+
+# ==============================
+# EVALUATE ANSWER (AI)
+# ==============================
+
+@app.route("/api/evaluate-answer", methods=["POST"])
+def evaluate_answer():
+
+    data = request.get_json()
+
+    question = data.get("question")
+    answer = data.get("answer")
+
+    prompt = f"""
+You are a technical interviewer.
+
+Evaluate the candidate answer.
+
+Question:
+{question}
+
+Answer:
+{answer}
+
+Return in this format:
+
+Score: (0-100)
+
+Feedback:
+• strengths
+• missing concepts
+• improvements
+"""
+
+    try:
+
+        print("🤖 Evaluating answer...")
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
 
         return jsonify({
-            "questions": selected
+            "evaluation": response.text
+        })
+
+    except Exception as e:
+
+        print("Evaluation error:", e)
+
+        # Backup evaluation
+        return jsonify({
+            "evaluation": """
+Score: 60 / 100
+
+Feedback:
+• Basic answer provided
+• Missing detailed explanation
+• Could improve with examples
+"""
+        })
+
+
+@app.route("/api/evaluate-interview", methods=["POST"])
+def evaluate_interview():
+
+    data = request.get_json()
+
+    role = data.get("role")
+    company = data.get("company")
+    responses = data.get("responses")
+
+    # Build text of all Q&A
+    qa_text = ""
+
+    for i, item in enumerate(responses):
+        qa_text += f"""
+Question {i+1}: {item['question']}
+Answer: {item['answer']}
+
+"""
+
+    prompt = f"""
+You are a technical interviewer evaluating a candidate.
+
+Role: {role}
+Company: {company}
+
+Evaluate the full interview.
+
+{qa_text}
+
+Return result in this format:
+
+Final Score: (0-100)
+
+Strengths:
+• bullet points
+
+Weaknesses:
+• bullet points
+
+Suggestions:
+• bullet points
+"""
+
+    try:
+
+        print("🧠 Evaluating full interview...")
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+
+        print("✅ Interview evaluation complete")
+
+        return jsonify({
+            "evaluation": response.text
+        })
+
+    except Exception as e:
+
+        print("Evaluation error:", e)
+
+        return jsonify({
+            "evaluation": "Evaluation unavailable"
         })
 # ==============================
 # TEST ROUTE
 # ==============================
+
 @app.route("/")
 def home():
     return "AI Interview Platform Backend Running"
@@ -303,5 +425,6 @@ def home():
 # ==============================
 # RUN SERVER
 # ==============================
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

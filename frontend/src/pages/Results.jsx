@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
-function Results() {
+function Results(){
 
 const location = useLocation();
 const navigate = useNavigate();
@@ -12,7 +13,46 @@ const role = data.role || "N/A";
 const company = data.company || "N/A";
 const score = data.score || 0;
 
-return (
+const [aiEvaluation,setAiEvaluation] = useState("");
+
+useEffect(()=>{
+
+const evaluateInterview = async () => {
+
+try{
+
+const response = await fetch(
+"http://localhost:5000/api/evaluate-interview",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+role:role,
+company:company,
+responses:results
+})
+}
+);
+
+const data = await response.json();
+
+setAiEvaluation(data.evaluation);
+
+}catch(error){
+
+setAiEvaluation("Evaluation unavailable");
+
+}
+
+};
+
+evaluateInterview();
+
+},[]);
+
+return(
 
 <div className="dashboard-page">
 
@@ -69,6 +109,25 @@ Question {index+1}
 );
 
 })}
+
+<br/>
+
+<h2>AI Interview Feedback</h2>
+
+<div
+style={{
+border:"1px solid #e5e7eb",
+padding:"15px",
+borderRadius:"8px",
+background:"#f9fafb"
+}}
+>
+
+<pre style={{whiteSpace:"pre-wrap"}}>
+{aiEvaluation ? aiEvaluation : "Evaluating interview..."}
+</pre>
+
+</div>
 
 <br/>
 
