@@ -4,7 +4,7 @@ from google import genai
 import random
 
 # Gemini API
-client = genai.Client(api_key="AIzaSyC3aw2_OaX1VFo_SJ9YOf5wwrzpJUE6_lg")
+client = genai.Client(api_key="AIzaSyAB6J4DqDCvdFAc3EJGuqG1hA9XBJKbOac")
 
 app = Flask(__name__)
 CORS(app)
@@ -66,8 +66,7 @@ easy_questions = [
 "What is syntax error?",
 "What is runtime error?",
 "What is logical error?",
-"What is testing?",
-"What is debugging?"
+"What is testing?"
 ]
 
 medium_questions = [
@@ -249,7 +248,7 @@ Rules:
 
     try:
 
-        print("🚀 Sending request to Gemini...")
+        print("Sending request to Gemini...")
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
@@ -261,11 +260,20 @@ Rules:
         questions = []
 
         for line in text.split("\n"):
+
             line = line.strip()
-            if line:
-                questions.append(line)
+
+            if not line:
+                continue
+
+            if line[0].isdigit():
+                line = line.split(".", 1)[-1].strip()
+
+            questions.append(line)
 
         questions = questions[:count]
+
+        print("AI Questions:", questions)
 
         return jsonify({"questions": questions})
 
@@ -286,7 +294,7 @@ Rules:
 
 
 # ==============================
-# EVALUATE ANSWER (AI)
+# EVALUATE ANSWER
 # ==============================
 
 @app.route("/api/evaluate-answer", methods=["POST"])
@@ -298,9 +306,7 @@ def evaluate_answer():
     answer = data.get("answer")
 
     prompt = f"""
-You are a technical interviewer.
-
-Evaluate the candidate answer.
+Evaluate this interview answer.
 
 Question:
 {question}
@@ -308,7 +314,7 @@ Question:
 Answer:
 {answer}
 
-Return in this format:
+Return:
 
 Score: (0-100)
 
@@ -320,22 +326,19 @@ Feedback:
 
     try:
 
-        print("🤖 Evaluating answer...")
+        print("Evaluating answer...")
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt
         )
 
-        return jsonify({
-            "evaluation": response.text
-        })
+        return jsonify({"evaluation": response.text})
 
     except Exception as e:
 
         print("Evaluation error:", e)
 
-        # Backup evaluation
         return jsonify({
             "evaluation": """
 Score: 60 / 100
@@ -348,6 +351,10 @@ Feedback:
         })
 
 
+# ==============================
+# EVALUATE FULL INTERVIEW
+# ==============================
+
 @app.route("/api/evaluate-interview", methods=["POST"])
 def evaluate_interview():
 
@@ -357,27 +364,26 @@ def evaluate_interview():
     company = data.get("company")
     responses = data.get("responses")
 
-    # Build text of all Q&A
     qa_text = ""
 
     for i, item in enumerate(responses):
+
         qa_text += f"""
 Question {i+1}: {item['question']}
 Answer: {item['answer']}
-
 """
 
     prompt = f"""
-You are a technical interviewer evaluating a candidate.
+You are evaluating a technical interview.
 
 Role: {role}
 Company: {company}
 
-Evaluate the full interview.
+Interview responses:
 
 {qa_text}
 
-Return result in this format:
+Return:
 
 Final Score: (0-100)
 
@@ -393,18 +399,14 @@ Suggestions:
 
     try:
 
-        print("🧠 Evaluating full interview...")
+        print("Evaluating full interview...")
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt
         )
 
-        print("✅ Interview evaluation complete")
-
-        return jsonify({
-            "evaluation": response.text
-        })
+        return jsonify({"evaluation": response.text})
 
     except Exception as e:
 
@@ -413,6 +415,8 @@ Suggestions:
         return jsonify({
             "evaluation": "Evaluation unavailable"
         })
+
+
 # ==============================
 # TEST ROUTE
 # ==============================
